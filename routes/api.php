@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\ServiceRequestController;
 // AUTH JWT
 // ======================
 
+Route::post('/register', [AuthController::class, 'register']);
+
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:api')->group(function () {
@@ -38,7 +40,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
 
-        // CITY
+    // CITY
     Route::prefix('/city')->group(function () {
         Route::get('', [CityController::class, 'index']);
         Route::get('/province/{province_id}', [CityController::class, 'byProvince']);
@@ -84,5 +86,4 @@ Route::middleware('auth:api')->group(function () {
         Route::patch('/{id}/status', [ServiceRequestController::class, 'updateStatus']);
         Route::get('/{id}/history', [ServiceRequestController::class, 'history']);
     });
-
 });

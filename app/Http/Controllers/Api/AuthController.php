@@ -14,6 +14,55 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
+
+    public function register(Request $request)
+    {
+        try {
+            $params = $request->all();
+
+            // Validasi input
+            $validator = Validator::make($params, [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|min:6'
+            ], [
+                'name.required' => 'Name is required',
+                'email.required' => 'Email is required',
+                'email.email' => 'Email must be a valid email address',
+                'email.unique' => 'Email is already registered',
+                'password.required' => 'Password is required',
+                'password.min' => 'Password must be at least 6 characters',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'code' => 400,
+                    'message' => 'Bad Request',
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+
+            // Buat user baru dan hash password-nya
+            $user = User::create([
+                'name' => $params['name'],
+                'email' => $params['email'],
+                'password' => Hash::make($params['password'])
+            ]);
+
+            return response()->json([
+                'code' => 201, // 201 berarti Created (Berhasil Dibuat)
+                'message' => 'Registration successful',
+                'data' => $user
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'code' => 500,
+                'message' => 'Internal Server Error',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function login(Request $request)
     {
         try {
@@ -79,7 +128,6 @@ class AuthController extends Controller
                 'message' => 'Login successful',
                 'data' => $info
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'code' => 500,
@@ -111,72 +159,67 @@ class AuthController extends Controller
         ], 200);
     }
 
-public function refresh()
-{
-    try {
+    public function refresh()
+    {
+        try {
+            $token = JWTAuth::getToken();
 
-        $token = JWTAuth::getToken();
+            if (!$token) {
+                return response()->json([
+                    'code' => 401,
+                    'message' => 'Token not provided'
+                ], 401);
+            }
 
-        if (!$token) {
+            $newToken = JWTAuth::refresh($token);
+
+            $currentDateTime = Carbon::now();
+            $expirationDateTime = $currentDateTime->addSeconds(
+                JWTAuth::factory()->getTTL() * 60
+            );
+
+            $info = [
+                'type' => 'Bearer',
+                'token' => $newToken,
+                'expires' => $expirationDateTime->format('Y-m-d H:i:s')
+            ];
+
             return response()->json([
-                'code' => 401,
-                'message' => 'Token not provided'
-            ], 401);
-        }
-
-        $newToken = JWTAuth::refresh($token);
-
-        $currentDateTime = Carbon::now();
-        $expirationDateTime = $currentDateTime->addSeconds(
-            JWTAuth::factory()->getTTL() * 60
-        );
-
-        $info = [
-            'type' => 'Bearer',
-            'token' => $newToken,
-            'expires' => $expirationDateTime->format('Y-m-d H:i:s')
-        ];
-
-        return response()->json([
-            'code' => 200,
-            'message' => 'Successfully refreshed',
-            'data' => $info
-        ], 200);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'code' => 500,
-            'message' => $e->getMessage()
-        ], 500);
-    }
-}
-
-public function logout()
-{
-    try {
-
-        $token = JWTAuth::getToken();
-
-        if (!$token) {
+                'code' => 200,
+                'message' => 'Successfully refreshed',
+                'data' => $info
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
-                'code' => 401,
-                'message' => 'Token not provided'
-            ], 401);
+                'code' => 500,
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        JWTAuth::invalidate($token);
-
-        return response()->json([
-            'code' => 200,
-            'message' => 'Successfully logged out'
-        ], 200);
-
-    } catch (\Exception $e) {
-
-        return response()->json([
-            'code' => 500,
-            'message' => $e->getMessage()
-        ], 500);
     }
-}
+
+    public function logout()
+    {
+        try {
+            $token = JWTAuth::getToken();
+
+            if (!$token) {
+                return response()->json([
+                    'code' => 401,
+                    'message' => 'Token not provided'
+                ], 401);
+            }
+
+            JWTAuth::invalidate($token);
+
+            return response()->json([
+                'code' => 200,
+                'message' => 'Successfully logged out'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'code' => 500,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
