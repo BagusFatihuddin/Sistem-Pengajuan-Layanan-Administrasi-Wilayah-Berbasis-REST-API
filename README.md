@@ -19,13 +19,13 @@ Fitur utama sistem meliputi:
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/BagusFatihuddin/webservice-praktikum-uas
+git clone https://github.com/BagusFatihuddin/Sistem-Pengajuan-Layanan-Administrasi-Wilayah-Berbasis-REST-API
 ```
 
 Masuk ke folder project
 
 ```bash
-cd nama-project
+cd Sistem-Pengajuan-Layanan-Administrasi-Wilayah-Berbasis-REST-API
 ```
 
 ---
