@@ -18,7 +18,7 @@ use App\Http\Controllers\Api\ServiceRequestController;
 // AUTH JWT
 // ======================
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 Route::middleware('auth:api')->group(function () {
 
