@@ -1,5 +1,6 @@
 # Sistem Pengajuan Layanan Administrasi Wilayah Berbasis REST API
 
+Sistem Pengajuan Layanan Administrasi Wilayah Berbasis REST API merupakan layanan backend yang dibangun untuk membantu digitalisasi proses administrasi pada tingkat desa atau kelurahan. Sistem ini menyediakan layanan pengajuan administrasi secara terstruktur, aman, dan mudah diintegrasikan dengan aplikasi lain.
 
 Fitur utama sistem meliputi:
 
@@ -18,7 +19,7 @@ Fitur utama sistem meliputi:
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/username/nama-project.git
+git clone https://github.com/BagusFatihuddin/webservice-praktikum-uas
 ```
 
 Masuk ke folder project
