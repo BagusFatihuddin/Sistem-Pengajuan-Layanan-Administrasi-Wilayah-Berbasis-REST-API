@@ -31,6 +31,7 @@ class ServiceRequestController extends Controller
 
     public function index(Request $request)
     {
+        // This is now protected by admin.only middleware in api.php
         $serviceRequest = ServiceRequestModel::orderBy('service_request_id', 'ASC')->get();
 
         return ApiFormatter::createJson(200, 'Get Data Success', $serviceRequest);
@@ -112,6 +113,14 @@ class ServiceRequestController extends Controller
                 return ApiFormatter::createJson(404, 'Service Request Not Found');
             }
 
+            /** @var User|null $user */
+            $user = Auth::guard('api')->user();
+
+            // Check ownership for non-admin users
+            if ($user && !$user->isAdmin() && $serviceRequest->user_id !== $user->id) {
+                return ApiFormatter::createJson(404, 'Service Request Not Found'); // Return 404 to avoid disclosing existence
+            }
+
             return ApiFormatter::createJson(200, 'Get Detail Service Request Success', $serviceRequest);
         } catch (\Exception $e) {
             return ApiFormatter::createJson(500, 'Internal Server Error', $e->getMessage());
@@ -126,6 +135,14 @@ class ServiceRequestController extends Controller
             $preServiceRequest = ServiceRequestModel::find($id);
             if (is_null($preServiceRequest)) {
                 return ApiFormatter::createJson(404, 'Data Not Found');
+            }
+
+            /** @var User|null $user */
+            $user = Auth::guard('api')->user();
+
+            // Check ownership for non-admin users
+            if ($user && !$user->isAdmin() && $preServiceRequest->user_id !== $user->id) {
+                return ApiFormatter::createJson(404, 'Data Not Found'); // Return 404 to avoid disclosing existence
             }
 
             if ($this->isFinalRequest($preServiceRequest)) {
@@ -181,6 +198,14 @@ class ServiceRequestController extends Controller
             $preServiceRequest = ServiceRequestModel::find($id);
             if (is_null($preServiceRequest)) {
                 return ApiFormatter::createJson(404, 'Data Not Found');
+            }
+
+            /** @var User|null $user */
+            $user = Auth::guard('api')->user();
+
+            // Check ownership for non-admin users
+            if ($user && !$user->isAdmin() && $preServiceRequest->user_id !== $user->id) {
+                return ApiFormatter::createJson(404, 'Data Not Found'); // Return 404 to avoid disclosing existence
             }
 
             if ($this->isFinalRequest($preServiceRequest)) {
@@ -248,6 +273,14 @@ class ServiceRequestController extends Controller
                 return ApiFormatter::createJson(404, 'Data Not Found');
             }
 
+            /** @var User|null $user */
+            $user = Auth::guard('api')->user();
+
+            // Check ownership for non-admin users
+            if ($user && !$user->isAdmin() && $serviceRequest->user_id !== $user->id) {
+                return ApiFormatter::createJson(404, 'Data Not Found'); // Return 404 to avoid disclosing existence
+            }
+
             if ($this->isFinalRequest($serviceRequest)) {
                 return ApiFormatter::createJson(400, 'Business Rule Violation', ['Final service request cannot be modified']);
             }
@@ -262,6 +295,7 @@ class ServiceRequestController extends Controller
 
     public function byStatus($status)
     {
+        // This is protected by admin.only middleware in api.php
         if (!in_array($status, ServiceRequestModel::validStatuses())) {
             return ApiFormatter::createJson(400, 'Invalid Status', ['Status is not valid']);
         }
@@ -275,6 +309,7 @@ class ServiceRequestController extends Controller
 
     public function byUser($user_id)
     {
+        // This is protected by admin.only middleware in api.php
         $user = User::find($user_id);
 
         if (is_null($user)) {
@@ -290,6 +325,7 @@ class ServiceRequestController extends Controller
 
     public function byDistrict($district_id)
     {
+        // This is protected by admin.only middleware in api.php
         $district = DistrictModel::find($district_id);
 
         if (is_null($district)) {
@@ -305,6 +341,7 @@ class ServiceRequestController extends Controller
 
     public function myServiceRequest()
     {
+        // This already returns requests only for the logged-in user
         $serviceRequest = ServiceRequestModel::where('user_id', Auth::guard('api')->id())
             ->orderBy('service_request_id', 'ASC')
             ->get();
@@ -314,6 +351,7 @@ class ServiceRequestController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
+        // This is protected by admin.only middleware in api.php
         try {
             $params = $request->all();
 
@@ -369,6 +407,14 @@ class ServiceRequestController extends Controller
 
         if (is_null($serviceRequest)) {
             return ApiFormatter::createJson(404, 'Service Request Not Found');
+        }
+
+        /** @var User|null $user */
+        $user = Auth::guard('api')->user();
+
+        // Admin can see all history. Regular user can only see their own request history.
+        if ($user && !$user->isAdmin() && $serviceRequest->user_id !== $user->id) {
+            return ApiFormatter::createJson(404, 'Service Request Not Found'); // Return 404 to avoid disclosing existence
         }
 
         $history = ServiceRequestHistoryModel::where('service_request_id', $id)

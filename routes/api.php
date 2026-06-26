@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\DistrictController;
 use App\Http\Controllers\Api\ServiceTypeController;
 use App\Http\Controllers\Api\ServiceRequestController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -74,17 +75,24 @@ Route::middleware('auth:api')->group(function () {
     // SERVICE REQUEST
     Route::get('/my-service-request', [ServiceRequestController::class, 'myServiceRequest']);
 
+    // Routes for Admin Only
+    Route::middleware(['admin.only'])->group(function () {
+        Route::prefix('/service-request')->group(function () {
+            Route::get('', [ServiceRequestController::class, 'index']);
+            Route::get('/status/{status}', [ServiceRequestController::class, 'byStatus']);
+            Route::get('/user/{user_id}', [ServiceRequestController::class, 'byUser']);
+            Route::get('/district/{district_id}', [ServiceRequestController::class, 'byDistrict']);
+            Route::patch('/{id}/status', [ServiceRequestController::class, 'updateStatus']);
+            Route::get('/{id}/history', [ServiceRequestController::class, 'history']); // Admin can see all history
+        });
+    });
+
+    // Routes for All Authenticated Users (including Admin)
     Route::prefix('/service-request')->group(function () {
-        Route::get('', [ServiceRequestController::class, 'index']);
-        Route::get('/status/{status}', [ServiceRequestController::class, 'byStatus']);
-        Route::get('/user/{user_id}', [ServiceRequestController::class, 'byUser']);
-        Route::get('/district/{district_id}', [ServiceRequestController::class, 'byDistrict']);
         Route::post('', [ServiceRequestController::class, 'create']);
         Route::get('/{id}', [ServiceRequestController::class, 'detail']);
         Route::put('/{id}', [ServiceRequestController::class, 'update']);
         Route::patch('/{id}', [ServiceRequestController::class, 'patch']);
         Route::delete('/{id}', [ServiceRequestController::class, 'delete']);
-        Route::patch('/{id}/status', [ServiceRequestController::class, 'updateStatus']);
-        Route::get('/{id}/history', [ServiceRequestController::class, 'history']);
     });
 });

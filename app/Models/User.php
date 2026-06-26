@@ -21,6 +21,7 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'role', // Add role to fillable
     ];
 
     /**
@@ -59,6 +60,16 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
+
     public function serviceRequests()
     {
         return $this->hasMany(ServiceRequestModel::class, 'user_id', 'id');
@@ -69,3 +80,4 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(ServiceRequestHistoryModel::class, 'user_id', 'id');
     }
 }
+

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CityModel;
 use App\Models\DistrictModel;
+use App\Models\ProvinceModel; // Add this
 use App\Models\ServiceRequestHistoryModel;
 use App\Models\ServiceRequestModel;
 use App\Models\ServiceTypeModel;
@@ -31,12 +32,19 @@ class ServiceAdministrationTest extends TestCase
             'name' => 'QA User',
             'email' => 'qa@example.com',
             'password' => Hash::make('password123'),
+            'role' => 'admin', // Ensure the user is an admin for these tests
         ]);
 
         $this->token = JWTAuth::fromUser($this->user);
 
+        // Ensure province exists for foreign key constraint
+        $province = ProvinceModel::create([
+            'province_code' => 'QA-PROV',
+            'province_name' => 'QA Province',
+        ]);
+
         $city = CityModel::create([
-            'province_id' => 1,
+            'province_id' => $province->province_id,
             'city_code' => 'QA-CITY',
             'city_name' => 'QA City',
         ]);
@@ -183,10 +191,12 @@ class ServiceAdministrationTest extends TestCase
 
         $ownRequest = $this->createServiceRequest();
 
+        $serviceType = ServiceTypeModel::first();
+
         ServiceRequestModel::create([
             'request_number' => 'SRV-OTHER-001',
             'user_id' => $otherUser->id,
-            'service_type_id' => 1,
+            'service_type_id' => $serviceType->service_type_id,
             'district_id' => $this->district->district_id,
             'applicant_name' => 'Other User',
             'applicant_nik' => '5201010101010002',
