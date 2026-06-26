@@ -30,6 +30,7 @@ class Kernel extends HttpKernel
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
+            \App\Http\Middleware\LogAPI::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
         'web' => [
@@ -56,9 +57,8 @@ class Kernel extends HttpKernel
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'has_jwt' => \App\Http\Middleware\HasJwtToken::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'log.api' => \App\Http\Middleware\LogApiMiddleware::class,
+        'log.api' => \App\Http\Middleware\LogAPI::class,
         'admin.only' => \App\Http\Middleware\AdminOnly::class,
     ];
 }
